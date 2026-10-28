@@ -39,8 +39,9 @@ class MiniGit:
     def commitar(self, mensagem):
         """Cria um novo commit apontando para o commit atual da branch ativa.
 
-        Gasta 2 passos: 1 para criar o registro do commit e 1 para mover
-        o ponteiro da branch atual para o novo commit.
+        Contagem de passos: 2 passos fixos.
+        - 1 passo para criar o nó do commit no dicionário.
+        - 1 passo para mover o ponteiro da branch ativa para o novo nó.
         """
         if not mensagem:
             raise ValueError("A mensagem do commit não pode ser vazia.")
@@ -62,7 +63,8 @@ class MiniGit:
     def mensagem(self, commit):
         """Devolve a mensagem associada ao identificador do commit informado.
 
-        Gasta 1 passo: consulta direta por chave no dicionário (O(1)).
+        Contagem de passos: 1 passo fixo.
+        - Acesso direto à chave no dicionário (busca por hash O(1)).
         """
         if commit not in self.__mensagens:
             raise ValueError(f"Commit '{commit}' não existe.")
@@ -73,7 +75,8 @@ class MiniGit:
     def pais(self, commit):
         """Devolve os identificadores dos pais do commit como uma tupla imutável.
 
-        Gasta 1 passo: consulta direta por chave no dicionário (O(1)).
+        Contagem de passos: 1 passo fixo.
+        - Acesso direto à chave no dicionário (busca por hash O(1)).
         """
         if commit not in self.__pais:
             raise ValueError(f"Commit '{commit}' não existe.")
@@ -84,7 +87,8 @@ class MiniGit:
     def criar_branch(self, nome):
         """Cria uma nova branch apontando para o commit atual da branch ativa.
 
-        Gasta 1 passo: cria um novo ponteiro no dicionário de branches.
+        Contagem de passos: 1 passo fixo.
+        - 1 passo para registrar a nova chave no dicionário de branches.
         """
         if nome in self.__branches:
             raise ValueError(f"Branch '{nome}' já existe.")
@@ -99,7 +103,8 @@ class MiniGit:
     def trocar_branch(self, nome):
         """Altera a branch ativa para a branch indicada.
 
-        Gasta 1 passo: atualiza o ponteiro que indica a branch atual.
+        Contagem de passos: 1 passo fixo.
+        - 1 passo para atualizar o nome da branch atual (ponteiro HEAD).
         """
         if nome not in self.__branches:
             raise ValueError(f"Branch '{nome}' não existe.")
@@ -110,8 +115,9 @@ class MiniGit:
     def mesclar(self, nome):
         """Mescla a branch indicada na branch atual, gerando um commit com dois pais.
 
-        Gasta 2 passos: 1 para criar o commit com os dois pais e 1 para mover
-        o ponteiro da branch atual para o commit de mesclagem.
+        Contagem de passos: 2 passos fixos.
+        - 1 passo para criar o commit com os dois pais.
+        - 1 passo para mover o ponteiro da branch ativa para o commit de mesclagem.
         """
         if nome not in self.__branches:
             raise ValueError(f"Branch '{nome}' não existe.")
@@ -134,8 +140,9 @@ class MiniGit:
     def log(self):
         """Devolve os identificadores de todos os commits alcançáveis a partir da branch atual.
 
-        Percorre o grafo de commits em largura usando uma fila (collections.deque).
-        Gasta 1 passo por commit visitado (o tamanho da tupla resultante, ou 0 se vazia).
+        Contagem de passos: 1 passo por commit visitado.
+        - Percorre o grafo em largura usando uma fila (collections.deque).
+        - Gasta a quantidade exata de commits retornados (0 se não houver commits).
         """
         commit_ponta = self.__branches[self.__branch_atual]
         if commit_ponta is None:
@@ -159,8 +166,9 @@ class MiniGit:
     def buscar(self, texto):
         """Busca o primeiro commit, por ordem de criação, cuja mensagem contenha o texto indicado.
 
-        Gasta 1 passo por commit examinado até encontrar a ocorrência, ou percorre todos
-        caso o texto não esteja presente.
+        Contagem de passos: 1 passo por commit examinado.
+        - Itera sobre os commits na ordem em que foram criados até encontrar a ocorrência,
+          ou percorre todos se nenhum contiver o texto.
         """
         passos_gastos = 0
         for identificador, mensagem in self.__mensagens.items():
@@ -175,7 +183,8 @@ class MiniGit:
     def merges(self):
         """Devolve uma tupla com os identificadores dos commits que possuem mais de um pai.
 
-        Gasta 1 passo por commit existente no repositório (percorre todos os nós).
+        Contagem de passos: 1 passo por commit existente no repositório.
+        - Percorre todos os commits registrados verificando a quantidade de pais.
         """
         lista_merges = []
         for identificador, lista_pais in self.__pais.items():
