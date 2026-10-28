@@ -130,3 +130,57 @@ class MiniGit:
         self.__branches[self.__branch_atual] = identificador
         self.__passos = 2
         return identificador
+
+    def log(self):
+        """Devolve os identificadores de todos os commits alcançáveis a partir da branch atual.
+
+        Percorre o grafo de commits em largura usando uma fila (collections.deque).
+        Gasta 1 passo por commit visitado (o tamanho da tupla resultante, ou 0 se vazia).
+        """
+        commit_ponta = self.__branches[self.__branch_atual]
+        if commit_ponta is None:
+            self.__passos = 0
+            return ()
+
+        visitados = []
+        fila = deque([commit_ponta])
+
+        while len(fila) > 0:
+            commit_atual = fila.popleft()
+            if commit_atual in visitados:
+                continue
+            visitados.append(commit_atual)
+            for pai in self.__pais[commit_atual]:
+                fila.append(pai)
+
+        self.__passos = len(visitados)
+        return tuple(visitados)
+
+    def buscar(self, texto):
+        """Busca o primeiro commit, por ordem de criação, cuja mensagem contenha o texto indicado.
+
+        Gasta 1 passo por commit examinado até encontrar a ocorrência, ou percorre todos
+        caso o texto não esteja presente.
+        """
+        passos_gastos = 0
+        for identificador, mensagem in self.__mensagens.items():
+            passos_gastos += 1
+            if texto in mensagem:
+                self.__passos = passos_gastos
+                return identificador
+
+        self.__passos = passos_gastos
+        return None
+
+    def merges(self):
+        """Devolve uma tupla com os identificadores dos commits que possuem mais de um pai.
+
+        Gasta 1 passo por commit existente no repositório (percorre todos os nós).
+        """
+        lista_merges = []
+        for identificador, lista_pais in self.__pais.items():
+            if len(lista_pais) > 1:
+                lista_merges.append(identificador)
+
+        self.__passos = len(self.__pais)
+        return tuple(lista_merges)
