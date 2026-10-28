@@ -193,3 +193,54 @@ class MiniGit:
 
         self.__passos = len(self.__pais)
         return tuple(lista_merges)
+
+
+def tentar(acao):
+    """Executa uma ação e captura possíveis exceções ValueError."""
+    try:
+        acao()
+    except ValueError as erro:
+        print("erro:", erro)
+
+
+def medir(quantidade):
+    """Mede os passos de escrita (commitar) e leitura (log) para uma quantidade de commits."""
+    git_medicao = MiniGit()
+    for numero in range(quantidade):
+        git_medicao.commitar(f"commit {numero}")
+    passos_commitar = git_medicao.passos
+    git_medicao.log()
+    passos_log = git_medicao.passos
+    return passos_commitar, passos_log
+
+
+if __name__ == "__main__":
+    git = MiniGit()
+    git.commitar("primeiro commit")
+    print(git.passos)
+    git.commitar("segundo commit")
+    git.criar_branch("feature")
+    print(git.passos)
+    git.commitar("terceiro commit")
+    git.trocar_branch("feature")
+    git.commitar("quarto commit")
+    git.trocar_branch("main")
+    git.mesclar("feature")
+    print(git.pais("c5"))
+    print(git.log(), git.passos)
+    print(git.mensagem("c3"), git.passos)
+    print(git.buscar("quarto"), git.passos)
+    print(git.merges())
+    git.trocar_branch("feature")
+    print(git.log(), git.passos)
+    git.trocar_branch("main")
+
+    tentar(lambda: git.trocar_branch("inexistente"))
+    tentar(lambda: git.criar_branch("main"))
+    tentar(lambda: git.mesclar("main"))
+    tentar(lambda: git.pais("c99"))
+
+    print("commits   passos do commitar   passos do log")
+    for quantidade in (10, 100, 1000):
+        passos_commitar, passos_log = medir(quantidade)
+        print(f"{quantidade:<10}{passos_commitar:<21}{passos_log}")
