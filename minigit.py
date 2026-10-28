@@ -31,6 +31,11 @@ class MiniGit:
         """Devolve a quantidade de passos gastos pela última operação realizada."""
         return self.__passos
 
+    @property
+    def branch_atual(self):
+        """Devolve o nome da branch atualmente ativa."""
+        return self.__branch_atual
+
     def commitar(self, mensagem):
         """Cria um novo commit apontando para o commit atual da branch ativa.
 
@@ -75,3 +80,53 @@ class MiniGit:
 
         self.__passos = 1
         return tuple(self.__pais[commit])
+
+    def criar_branch(self, nome):
+        """Cria uma nova branch apontando para o commit atual da branch ativa.
+
+        Gasta 1 passo: cria um novo ponteiro no dicionário de branches.
+        """
+        if nome in self.__branches:
+            raise ValueError(f"Branch '{nome}' já existe.")
+
+        commit_atual = self.__branches[self.__branch_atual]
+        if commit_atual is None:
+            raise ValueError("Não há commits para criar uma nova branch.")
+
+        self.__branches[nome] = commit_atual
+        self.__passos = 1
+
+    def trocar_branch(self, nome):
+        """Altera a branch ativa para a branch indicada.
+
+        Gasta 1 passo: atualiza o ponteiro que indica a branch atual.
+        """
+        if nome not in self.__branches:
+            raise ValueError(f"Branch '{nome}' não existe.")
+
+        self.__branch_atual = nome
+        self.__passos = 1
+
+    def mesclar(self, nome):
+        """Mescla a branch indicada na branch atual, gerando um commit com dois pais.
+
+        Gasta 2 passos: 1 para criar o commit com os dois pais e 1 para mover
+        o ponteiro da branch atual para o commit de mesclagem.
+        """
+        if nome not in self.__branches:
+            raise ValueError(f"Branch '{nome}' não existe.")
+
+        if nome == self.__branch_atual:
+            raise ValueError("Não é possível mesclar a branch com ela mesma.")
+
+        commit_atual = self.__branches[self.__branch_atual]
+        commit_indicado = self.__branches[nome]
+
+        self.__contador += 1
+        identificador = f"c{self.__contador}"
+
+        self.__pais[identificador] = [commit_atual, commit_indicado]
+        self.__mensagens[identificador] = f"merge de {nome}"
+        self.__branches[self.__branch_atual] = identificador
+        self.__passos = 2
+        return identificador
